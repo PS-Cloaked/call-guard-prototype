@@ -2982,12 +2982,6 @@ scr-all-set  (Figma 5040:37985)
       <button class="sb-pill" data-g="v3" aria-pressed="false">V3 bars</button>
     </div>
   </section>
-  <section class="sb-group" id="sbBubbleStyleGroup"><span class="sb-label">V1 bubble style</span>
-    <div class="sb-pills" id="sbBubbleStyle">
-      <button class="sb-pill" data-bs="outline" aria-pressed="true">Outlined</button>
-      <button class="sb-pill" data-bs="filled" aria-pressed="false">Filled</button>
-    </div>
-  </section>
   <section class="sb-group" id="sbOverflowGroup" hidden><span class="sb-label">V2 dots &mdash; daily volume</span>
     <div class="sb-pills" id="sbOverflow">
       <button class="sb-pill" data-of="keep" aria-pressed="true">Less than 10 calls/day</button>
@@ -3046,7 +3040,6 @@ const BubbleViz=(function(){
   let W=394,H=353,CX=197,CY=167,RING_R=149,DPR=1;
   let extreme=false,extremeT=0;   // 0→1 fade into the solid state
   let userOmega=0,dragging=false,dragAng=0;   // drag-to-spin
-  let discFilled=false;   // V1 variation: light filled disc + teal germs (vs. the outlined circle)
   let pX=0,pY=0,pVX=0,pVY=0,pActive=false;    // finger-as-collider (poke the balls)
   /* shield scan — protective wavefront that sweeps across the field every ~10s
      (ported from call guard-spam.html) */
@@ -3074,15 +3067,11 @@ const BubbleViz=(function(){
     ballLo:'#00838B',
     ink:'#141410',
     inkOnJade:'#FFFFFF',
-    discFill:'#DDEDEE',   // "filled" variation: light disc behind the germs
-    discBall:'#006166',   // germ color in the filled variation
-    discInk:'#141410',    // dark number/label on the light disc (kept dark in both themes)
   };
   function setDark(d){
     C.bg=d?'#1C1C19':'#FFFFFF';
     C.ink=d?'#F3F1ED':'#141410';
   }
-  function setStyle(filled){discFilled=!!filled;}   // toggle the filled-circle variation
   /* escape-contact flash: jade #00A8B1 → Cloaked orange #FF550C.
      lerp by t∈[0,1] (t=1 = full orange at the moment of impact). */
   const FLASH_FROM=[0,168,177],FLASH_TO=[255,85,12];
@@ -3291,13 +3280,13 @@ const BubbleViz=(function(){
   function drawSpiky(b){
     if(b.flash>0)ctx.fillStyle=flashColor(b.flash);   // escape-contact orange flash
     ctx.beginPath();
-    if(b.r<5){ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();if(b.flash>0)ctx.fillStyle=discFilled?C.discBall:C.ball;return;}
+    if(b.r<5){ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();if(b.flash>0)ctx.fillStyle=C.ball;return;}
     const k=(b.r*2)/SCAM_VB;
     ctx.save();
     ctx.translate(b.x,b.y);ctx.rotate(b.spin);ctx.scale(k,k);ctx.translate(-SCAM_VB/2,-SCAM_VB/2);
     ctx.fill(SCAM_PATH);
     ctx.restore();
-    if(b.flash>0)ctx.fillStyle=discFilled?C.discBall:C.ball;  // restore the germ base color
+    if(b.flash>0)ctx.fillStyle=C.ball;              // restore shared jade fill
   }
   function txt(s,x,y,sw,ink,outline){
     ctx.lineJoin='round';
@@ -3339,8 +3328,7 @@ const BubbleViz=(function(){
     if(extremeT<0.999){
       ctx.save();
       ctx.globalAlpha=1-extremeT;
-      if(discFilled){ctx.beginPath();ctx.arc(CX,CY,RING_R,0,7);ctx.fillStyle=C.discFill;ctx.fill();}
-      ctx.fillStyle=discFilled?C.discBall:C.ball;
+      ctx.fillStyle=C.ball;
       for(const b of balls)drawSpiky(b);
       ctx.restore();
     }
@@ -3351,8 +3339,8 @@ const BubbleViz=(function(){
       ctx.restore();
     }
 
-    /* ring on top — jade outline, or a faint rim on the dark-disc variation */
-    ctx.lineWidth=1.2;ctx.strokeStyle=discFilled?'rgba(0,97,102,0.30)':C.ring;
+    /* ring on top */
+    ctx.lineWidth=1.2;ctx.strokeStyle=C.ring;
     ctx.beginPath();ctx.arc(CX,CY,RING_R,0,7);ctx.stroke();
 
     /* shield sweep — a jade wavefront passes across the field (call guard-spam port) */
@@ -3405,8 +3393,8 @@ const BubbleViz=(function(){
       ctx.beginPath();ctx.arc(CX,CY,RING_R,h.ang-spread,h.ang+spread);ctx.stroke();
     }
 
-    /* number: ink w/ white halo over dots; light w/ dark halo on the dark disc; white on solid jade */
-    if(extremeT<0.5)drawNumber(dt,discFilled?C.discInk:C.ink,discFilled?C.discFill:C.bg,4.5);
+    /* number: ink w/ white halo over dots; white on solid jade */
+    if(extremeT<0.5)drawNumber(dt,C.ink,C.bg,4.5);
     else drawNumber(dt,C.inkOnJade,C.ball,0);
   }
   function frame(now){
@@ -3554,7 +3542,7 @@ const BubbleViz=(function(){
     rollT=0;
   };
   function unmount(){running=false;if(rafId)cancelAnimationFrame(rafId);rafId=0;unbindSpin(cv);cv=null;ctx=null;}
-  return {mount,unmount,setDark,setStyle};
+  return {mount,unmount,setDark};
 })();
 
 /* ───────── Wiring (graph options + sidebar) ───────── */
@@ -3669,15 +3657,7 @@ document.getElementById('sbGraph').addEventListener('click',e=>{
   /* the daily-volume option only applies to V2 dots */
   const og=document.getElementById('sbOverflowGroup');
   if(og)og.hidden=graphOpt!=='v2';
-  /* the bubble-style variation only applies to V1 bubbles */
-  const bsG=document.getElementById('sbBubbleStyleGroup');
-  if(bsG)bsG.hidden=graphOpt!=='v1';
   show();
-});
-document.getElementById('sbBubbleStyle').addEventListener('click',e=>{
-  const b=e.target.closest('.sb-pill');if(!b)return;
-  sbPress('sbBubbleStyle',b);
-  BubbleViz.setStyle(b.dataset.bs==='filled');
 });
 document.getElementById('sbOverflow').addEventListener('click',e=>{
   const b=e.target.closest('.sb-pill');if(!b)return;
@@ -3695,12 +3675,10 @@ function setWidget(on){
      (Mode + Days-since-install still apply, so they stay visible.) */
   const gG=document.getElementById('sbGraphGroup'),
         bG=document.getElementById('sbBannerGroup'),
-        oG=document.getElementById('sbOverflowGroup'),
-        bsG=document.getElementById('sbBubbleStyleGroup');
+        oG=document.getElementById('sbOverflowGroup');
   if(gG)gG.hidden=on;
   if(bG)bG.hidden=on;
   if(oG)oG.hidden=on||graphOpt!=='v2';
-  if(bsG)bsG.hidden=on||graphOpt!=='v1';
   if(on)renderWidgets();
   else WidgetBubbles.stop();
 }
