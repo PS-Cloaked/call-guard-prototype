@@ -4158,7 +4158,7 @@ window.callKey = callKey;
 window.catFor  = catFor;
 
 /* ── Recent history tab data (verbatim from Figma call guard_list) ── */
-const RH_TABS=['All','Spam','Unknown','Safe','Voicemail','Missed'];
+const RH_TABS=['All','Spam','Unknown','Safe','AI Answered','Missed'];
 const row=(g,num,loc,tag,red,actions)=>({g,num,loc,tag,red:!!red,actions:!!actions});
 const RH={
   All:[
@@ -4194,7 +4194,7 @@ const RH={
       row('shield','(425) 135 - 6142','Seattle,WA','Safe'),
       row('shield','(425) 135 - 6142','Seattle,WA','Safe')]},
   ],
-  Voicemail:[
+  'AI Answered':[
     {d:'Today 8:30pm',rows:[row('slash','(646)479-3456','Los Angeles, CA','Spam',1)]},
     {d:'Today 8:30pm',rows:[
       row('slash','(512) 624 - 8932','New York,NY','Spam',1),
@@ -4299,7 +4299,7 @@ document.getElementById('rhList').addEventListener('click',e=>{
   }
   const li=e.target.closest('.li-row');if(!li)return;
   const r=RH[rhActive][+li.dataset.gi].rows[+li.dataset.ri];
-  const route=rhActive==='Voicemail'?'voicemail':
+  const route=rhActive==='AI Answered'?'voicemail':
     ({Spam:'spam',Safe:'safe',Unknown:'unknown',Missed:'missed'})[r.tag]||'unknown';
   openDetailStatic(route,r.num,r.loc);
 });
@@ -4657,9 +4657,9 @@ function togglePlay(btn){
 
 
 /* ═══ See All → full Call history page (Figma 5040:35504) — rises from bottom like the pause sheet ═══ */
-const SEEALL_TABS=['All','Safe','Unknown','Spam','Voicemail','Missed'];
+const SEEALL_TABS=['All','Safe','Unknown','Spam','AI Answered','Missed'];
 const CA_ALL=[
-  {d:'Today 8:30am',rows:[{num:'(322) 142 - 8932',loc:'Los Angeles, CA',tag:'Voicemail'}]},
+  {d:'Today 8:30am',rows:[{num:'(322) 142 - 8932',loc:'Los Angeles, CA',tag:'AI Answered'}]},
   {d:'Today 4:30am',rows:[{num:'(646)479-3456',loc:'Los Angeles, CA',tag:'Spam'}]},
   {d:'05/12/2026',rows:[
     {num:'(512) 624 - 8932',loc:'New York,CA',tag:'Spam'},
@@ -4757,7 +4757,7 @@ function openSeeAll(){
     }
     const row=e.target.closest('.ca-row');
     if(row){
-      const route=({Spam:'spam',Safe:'safe',Unknown:'unknown',Voicemail:'voicemail',Missed:'missed'})[row.dataset.tag]||'unknown';
+      const route=({Spam:'spam',Safe:'safe',Unknown:'unknown','AI Answered':'voicemail',Missed:'missed'})[row.dataset.tag]||'unknown';
       openDetailStatic(route,row.dataset.num,row.dataset.loc);
     }
   });
