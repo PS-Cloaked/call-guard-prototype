@@ -3331,6 +3331,7 @@ const BubbleViz=(function(){
     let dt=lastDraw==null?16:now-lastDraw;lastDraw=now;
     if(dt>100||dt<0)dt=16;
     ctx.clearRect(0,0,W,H);
+    ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);   // opaque bg so PNG/MP4 export isn't transparent (→black)
 
     /* extreme fade 0→1 */
     extremeT+=((extreme?1:0)-extremeT)*Math.min(1,dt/240);
