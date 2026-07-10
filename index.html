@@ -123,7 +123,7 @@
   /* voicemail list item (Figma 5809:27902): stacked — top row + message preview */
   .li-row.li-vm{flex-direction:column;align-items:stretch;gap:12px;}
   .li-vm-top{display:flex;align-items:center;gap:12px;}
-  .li-msg{font-size:14px;line-height:1.3;letter-spacing:-0.28px;color:var(--text-secondary);}
+  .li-msg{padding-left:52px;font-size:14px;line-height:1.3;letter-spacing:-0.28px;color:var(--text-secondary);}   /* aligns under the number: 20 padding + 40 avatar + 12 gap = 72px (Figma Spacing/72) */
 
   /* Recent history filter tabs — 16px, active underlined ink */
   .rh-tabs{display:flex;background:var(--bkgd-02);border-bottom:1px solid var(--divider);overflow-x:auto;
@@ -460,6 +460,11 @@
 .dp-hist-tx.dp-split{display:flex;justify-content:space-between;}
 .dp-notr{
   padding:24px 20px;border-bottom:1px solid var(--divider,#E0DDD6);
+  font-size:16px;font-weight:400;line-height:1.3;letter-spacing:-0.32px;color:var(--text-primary,#141410);
+}
+/* voicemail message body (under the player in the Voicemail section) */
+.dp-vm-msg{
+  background:var(--bkgd-02,#FFFFFF);padding:8px 20px 24px;
   font-size:16px;font-weight:400;line-height:1.3;letter-spacing:-0.32px;color:var(--text-primary,#141410);
 }
 .dp-player-wrap{background:var(--bkgd-02,#FFFFFF);padding:20px;}
@@ -1304,6 +1309,22 @@ body.dark{--sb-bg:#141410;--sb-text:#F3F1ED;--sb-mute:#6B6960;--sb-rule:#2A2A26;
       </div>
       <div class="dp-gap"></div>
       <div class="dp-content">
+        <div class="dp-sect-head"><span class="dp-sect-title">Voicemail</span></div>
+        <div class="dp-hist">
+          <span class="dp-hist-av"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.5 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM5.5 12a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"/><path fill-rule="evenodd" clip-rule="evenodd" d="M16.5 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM14.5 12a2 2 0 1 1 4 0 2 2 0 0 1-4 0Z"/><path d="M7.5 14.5h9v1.5h-9z"/></svg></span>
+          <span class="dp-hist-tx">3/24/2026 10:14am</span>
+        </div>
+        <div class="dp-player-wrap">
+          <div class="dp-player">
+            <button class="dp-play" aria-label="Play"><svg viewBox="0 0 24 24"><path d="M7.5 5.2v13.6c0 .8.9 1.3 1.6.9l10.6-6.8c.6-.4.6-1.4 0-1.8L9.1 4.3c-.7-.4-1.6.1-1.6.9z"/></svg></button>
+            <div class="dp-track"><div class="dp-thumb"></div></div>
+            <span class="dp-dur">0:24</span>
+          </div>
+        </div>
+        <div class="dp-vm-msg">Hi, this message is for Kyle. Give me a call back when you get a chance, it&rsquo;s about your account. Thanks</div>
+      </div>
+      <div class="dp-gap"></div>
+      <div class="dp-content">
         <div class="dp-sect-head"><span class="dp-sect-title">Call History</span></div>
         <div class="dp-hist">
           <span class="dp-hist-av"><svg viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M18 8.25C20.0711 8.25 21.75 9.92893 21.75 12C21.75 14.0711 20.0711 15.75 18 15.75H6C3.92893 15.75 2.25 14.0711 2.25 12C2.25 9.92893 3.92893 8.25 6 8.25C8.07107 8.25 9.75 9.92893 9.75 12C9.75 12.8443 9.47083 13.6232 9 14.25H15C14.5292 13.6232 14.25 12.8443 14.25 12C14.25 9.92893 15.9289 8.25 18 8.25ZM6 9.75C4.75736 9.75 3.75 10.7574 3.75 12C3.75 13.2426 4.75736 14.25 6 14.25C7.24264 14.25 8.25 13.2426 8.25 12C8.25 10.7574 7.24264 9.75 6 9.75ZM18 9.75C16.7574 9.75 15.75 10.7574 15.75 12C15.75 13.2426 16.7574 14.25 18 14.25C19.2426 14.25 20.25 13.2426 20.25 12C20.25 10.7574 19.2426 9.75 18 9.75Z"/></svg></span>
@@ -1320,6 +1341,7 @@ body.dark{--sb-bg:#141410;--sb-text:#F3F1ED;--sb-mute:#6B6960;--sb-rule:#2A2A26;
           <div class="dp-tr-line"><span class="dp-tr-ts">0:01</span><span class="dp-tr-tx"><span class="dp-spk-g">Call Guard:</span> Hello, you&rsquo;ve reached Kyle&rsquo;s voice agent. Can you state the nature of your call?</span></div>
           <div class="dp-tr-line dp-caller"><span class="dp-tr-ts">0:04</span><span class="dp-tr-tx"><span class="dp-spk-c">Caller:</span> This is Dr. Lee's office confirming Kyle's appointment.</span></div>
           <div class="dp-tr-line"><span class="dp-tr-ts">0:08</span><span class="dp-tr-tx dp-fwd">Forwarded to your phone</span></div>
+          <div class="dp-tr-line"><span class="dp-tr-ts">0:24</span><span class="dp-tr-tx dp-fwd">No answer &mdash; voicemail</span></div>
         </div>
         <div class="dp-allcalls all-calls-row">
           <span class="dp-allcalls-tx">All calls from this number</span>
