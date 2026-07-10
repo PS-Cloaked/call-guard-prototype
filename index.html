@@ -3533,7 +3533,7 @@ const BubbleViz=(function(){
   function mount(canvas,opts){
     unmount();
     if(!canvas)return;
-    try{ctx=canvas.getContext('2d');}catch(e){ctx=null;}
+    try{ctx=canvas.getContext('2d',{alpha:false});}catch(e){ctx=null;}   // opaque canvas → PNG/MP4 export never has a transparent(→black) background
     if(!ctx)return;
     cv=canvas;DPR=Math.min(window.devicePixelRatio||1,2);
     const rect=cv.getBoundingClientRect();
@@ -4158,7 +4158,14 @@ document.getElementById('sbNumber').addEventListener('click',e=>{
   BubbleViz.setNumber(b.dataset.num==='on');
 });
 document.getElementById('sbDlPng').addEventListener('click',()=>{
-  canvas.toBlob(function(blob){
+  /* composite onto an opaque bg so the PNG never has a transparent(→black) background */
+  const off=document.createElement('canvas');
+  off.width=canvas.width; off.height=canvas.height;
+  const octx=off.getContext('2d');
+  octx.fillStyle=document.body.classList.contains('dark')?'#1C1C19':'#FFFFFF';
+  octx.fillRect(0,0,off.width,off.height);
+  octx.drawImage(canvas,0,0);
+  off.toBlob(function(blob){
     if(!blob)return;
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
