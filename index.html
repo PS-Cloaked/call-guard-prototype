@@ -3333,7 +3333,7 @@ const BubbleViz=(function(){
      number center at CY−8, label center at CY+40). */
   function drawNumber(dt,ink,outline,haloW){
     rollT=Math.min(1,rollT+dt/360);
-    const yOff=(goal===0?8:0);   // empty "0" state: nudge number + label down 8px for optical centering
+    const yOff=8;   // all states: nudge number + label down 8px so they sit centered on the ring center
     const e=1-Math.pow(1-rollT,3),HH=80,ncy=CY-8+yOff,cellW=42;
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font='400 72px "SF Pro Display","SF Pro Text",-apple-system,sans-serif';
