@@ -120,6 +120,10 @@
   /* tag chips — px12 / py4 / radius 4 */
   .li-tag{flex:none;font-size:14px;line-height:1.2;letter-spacing:-0.28px;padding:4px 12px;border-radius:4px;background:var(--bkgd-01);color:var(--text-primary);}
   .li-tag.spam{background:#B83100;color:#F3F1ED;}
+  /* voicemail list item (Figma 5809:27902): stacked — top row + message preview */
+  .li-row.li-vm{flex-direction:column;align-items:stretch;gap:12px;}
+  .li-vm-top{display:flex;align-items:center;gap:12px;}
+  .li-msg{font-size:14px;line-height:1.3;letter-spacing:-0.28px;color:var(--text-secondary);}
 
   /* Recent history filter tabs — 16px, active underlined ink */
   .rh-tabs{display:flex;background:var(--bkgd-02);border-bottom:1px solid var(--divider);overflow-x:auto;
@@ -4224,9 +4228,10 @@ window.catFor  = catFor;
 
 /* ── Recent history tab data (verbatim from Figma call guard_list) ── */
 const RH_TABS=['All','Spam','Unknown','Safe','Voicemail','Missed'];
-const row=(g,num,loc,tag,red,actions)=>({g,num,loc,tag,red:!!red,actions:!!actions});
+const row=(g,num,loc,tag,red,actions,msg)=>({g,num,loc,tag,red:!!red,actions:!!actions,msg:msg||''});
 const RH={
   All:[
+    {d:'Today 9:15am',rows:[row('vm','(425) 135 - 6142','Los Angeles, CA','Voicemail',0,0,"This is Dr. Lee's office confirming Kyle's appointment. Please call back. Thank you.")]},
     {d:'Today 8:30am',rows:[row('unk','(322) 142 - 8932','Los Angeles, CA','Missed')]},
     {d:'Today 4:30am',rows:[row('slash','(646)479-3456','Los Angeles, CA','Spam',1)]},
     {d:'Yesterday',rows:[
@@ -4259,13 +4264,12 @@ const RH={
       row('shield','(425) 135 - 6142','Seattle,WA','Safe'),
       row('shield','(425) 135 - 6142','Seattle,WA','Safe')]},
   ],
+  /* Voicemail = only calls where the caller chose to leave a message (a subset) */
   Voicemail:[
-    {d:'Today 8:30pm',rows:[row('slash','(646)479-3456','Los Angeles, CA','Spam',1)]},
-    {d:'Today 8:30pm',rows:[
-      row('slash','(512) 624 - 8932','New York,NY','Spam',1),
-      row('shield','(425) 135 - 6142','Seattle,WA','Safe'),
-      row('unk','(322) 142 - 8932','Unknown','Unknown')]},
-    {d:'6/25/26',rows:[row('unk','(322) 142 - 8932','Unknown','Unknown')]},
+    {d:'Today 8:30am',rows:[row('vm','(425) 135 - 6142','Los Angeles, CA','Voicemail',0,0,"This is Dr. Lee's office confirming Kyle's appointment. Please call back. Thank you.")]},
+    {d:'Yesterday',rows:[
+      row('vm','(322) 142 - 8932','Nashville, TN','Voicemail',0,0,"Hi, it's your FedEx driver — I've got a package that needs a signature. I'll try again tomorrow around noon."),
+      row('vm','(646) 479 - 3456','New York, NY','Voicemail',0,0,"Hey, it's Marcus from the apartment tour — give me a ring back when you get a chance!")]},
   ],
   Missed:[
     {d:'Today 8:30pm',rows:[row('unk','(322) 142 - 8932','Los Angeles, CA','Missed')]},
@@ -4292,6 +4296,20 @@ function tenureKeepsGroup(d,tenure){
 }
 
 function rhRowHTML(r,gi,ri,divided){
+  /* Voicemail rows (Figma 5809:27902): jade vm avatar + number/loc + tag,
+     with a preview of the message the caller left below. */
+  if(r.tag==='Voicemail'){
+    const vm=
+      '<div class="li-row li-vm'+(divided?' divided':'')+'" data-gi="'+gi+'" data-ri="'+ri+'">'+
+        '<div class="li-vm-top">'+
+          '<span class="li-av">'+svgi('vm')+'</span>'+
+          '<div class="li-tx"><div class="li-h">'+r.num+'</div><div class="li-s">'+r.loc+'</div></div>'+
+          '<span class="li-tag">Voicemail</span>'+
+        '</div>'+
+        (r.msg?'<div class="li-msg">'+r.msg+'</div>':'')+
+      '</div>';
+    return '<div class="sw-row"><button class="sw-del">'+svgi('trash')+'<span>Delete</span></button>'+vm+'</div>';
+  }
   const cat=catFor(r.num,r.loc);
   const avHTML=cat?catListIcon(cat):svgi(r.g);
   /* category swaps the ICON only — the list label stays "Spam"
@@ -4364,8 +4382,7 @@ document.getElementById('rhList').addEventListener('click',e=>{
   }
   const li=e.target.closest('.li-row');if(!li)return;
   const r=RH[rhActive][+li.dataset.gi].rows[+li.dataset.ri];
-  const route=rhActive==='Voicemail'?'voicemail':
-    ({Spam:'spam',Safe:'safe',Unknown:'unknown',Missed:'missed'})[r.tag]||'unknown';
+  const route=({Spam:'spam',Safe:'safe',Unknown:'unknown',Voicemail:'voicemail',Missed:'missed'})[r.tag]||'unknown';
   openDetailStatic(route,r.num,r.loc);
 });
 renderRH();
@@ -4724,7 +4741,7 @@ function togglePlay(btn){
 /* ═══ See All → full Call history page (Figma 5040:35504) — rises from bottom like the pause sheet ═══ */
 const SEEALL_TABS=['All','Safe','Unknown','Spam','Voicemail','Missed'];
 const CA_ALL=[
-  {d:'Today 8:30am',rows:[{num:'(322) 142 - 8932',loc:'Los Angeles, CA',tag:'Voicemail'}]},
+  {d:'Today 8:30am',rows:[{num:'(322) 142 - 8932',loc:'Los Angeles, CA',tag:'Voicemail',msg:"This is Dr. Lee's office confirming Kyle's appointment. Please call back. Thank you."}]},
   {d:'Today 4:30am',rows:[{num:'(646)479-3456',loc:'Los Angeles, CA',tag:'Spam'}]},
   {d:'05/12/2026',rows:[
     {num:'(512) 624 - 8932',loc:'New York,CA',tag:'Spam'},
@@ -4766,12 +4783,25 @@ function caListHTML(tab){
       const avHTML=cat?catListIcon(cat):svgi(av);
       /* icon-only swap — list label stays the base tag ("Spam") */
       const tagTxt=r.tag;
-      const sw='<div class="sw-row"><button class="sw-del">'+svgi('trash')+'<span>Delete</span></button>'+
-        /* unknown rows carry Define buttons below — no divider between row and buttons */
-        '<div class="li-row ca-row'+((i<total&&!isUnknown)?' divided':'')+'" data-idx="'+idx+'" data-num="'+r.num+'" data-loc="'+r.loc+'" data-tag="'+r.tag+'">'+
-        '<span class="li-av">'+avHTML+'</span>'+
-        '<div class="li-tx"><div class="li-h">'+r.num+'</div><div class="li-s">'+r.loc+'</div></div>'+
-        '<span class="li-tag'+(r.red?' spam':'')+'">'+tagTxt+'</span></div></div>';
+      let sw;
+      if(r.tag==='Voicemail'){
+        sw='<div class="sw-row"><button class="sw-del">'+svgi('trash')+'<span>Delete</span></button>'+
+          '<div class="li-row ca-row li-vm'+(i<total?' divided':'')+'" data-idx="'+idx+'" data-num="'+r.num+'" data-loc="'+r.loc+'" data-tag="'+r.tag+'">'+
+            '<div class="li-vm-top">'+
+              '<span class="li-av">'+svgi('vm')+'</span>'+
+              '<div class="li-tx"><div class="li-h">'+r.num+'</div><div class="li-s">'+r.loc+'</div></div>'+
+              '<span class="li-tag">Voicemail</span>'+
+            '</div>'+
+            (r.msg?'<div class="li-msg">'+r.msg+'</div>':'')+
+          '</div></div>';
+      }else{
+        sw='<div class="sw-row"><button class="sw-del">'+svgi('trash')+'<span>Delete</span></button>'+
+          /* unknown rows carry Define buttons below — no divider between row and buttons */
+          '<div class="li-row ca-row'+((i<total&&!isUnknown)?' divided':'')+'" data-idx="'+idx+'" data-num="'+r.num+'" data-loc="'+r.loc+'" data-tag="'+r.tag+'">'+
+          '<span class="li-av">'+avHTML+'</span>'+
+          '<div class="li-tx"><div class="li-h">'+r.num+'</div><div class="li-s">'+r.loc+'</div></div>'+
+          '<span class="li-tag'+(r.red?' spam':'')+'">'+tagTxt+'</span></div></div>';
+      }
       if(isUnknown){
         html+='<div class="li-group'+(i<total?' divided':'')+'">'+sw+
           '<div class="li-actions" data-idx="'+idx+'">'+
