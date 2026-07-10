@@ -4176,20 +4176,34 @@ document.getElementById('sbDlPng').addEventListener('click',()=>{
 });
 document.getElementById('sbDlVid').addEventListener('click',function(){
   const btn=this;
-  if(!canvas.captureStream||typeof MediaRecorder==='undefined'){
-    alert('This browser can’t record the canvas — try Download image (.png).');return;
+  if(typeof MediaRecorder==='undefined'){
+    alert('This browser can’t record — try Download image (.png).');return;
   }
+  /* Record from an OPAQUE offscreen canvas (fill bg + copy the graph each frame)
+     so the video never carries an alpha channel — regardless of codec. */
+  const off=document.createElement('canvas');
+  off.width=canvas.width; off.height=canvas.height;
+  if(!off.captureStream){ alert('This browser can’t record — try Download image (.png).');return; }
+  const octx=off.getContext('2d',{alpha:false});
+  const bg=document.body.classList.contains('dark')?'#1C1C19':'#FFFFFF';
+  let raf;
+  (function paint(){
+    octx.fillStyle=bg; octx.fillRect(0,0,off.width,off.height);
+    octx.drawImage(canvas,0,0);
+    raf=requestAnimationFrame(paint);
+  })();
   let mime='';
   if(MediaRecorder.isTypeSupported){
     mime=['video/mp4;codecs=avc1','video/mp4','video/webm;codecs=vp9','video/webm']
       .find(t=>MediaRecorder.isTypeSupported(t))||'';
   }
   let rec;
-  try{ rec=new MediaRecorder(canvas.captureStream(30),mime?{mimeType:mime}:undefined); }
-  catch(err){ alert('Recording not supported here — try the .png download.');return; }
+  try{ rec=new MediaRecorder(off.captureStream(30),mime?{mimeType:mime}:undefined); }
+  catch(err){ cancelAnimationFrame(raf); alert('Recording not supported here — try the .png download.');return; }
   const chunks=[];
   rec.ondataavailable=e=>{ if(e.data&&e.data.size)chunks.push(e.data); };
   rec.onstop=()=>{
+    cancelAnimationFrame(raf);
     const type=rec.mimeType||mime||'video/webm';
     const ext=type.indexOf('mp4')>=0?'mp4':'webm';
     const a=document.createElement('a');
@@ -4200,7 +4214,6 @@ document.getElementById('sbDlVid').addEventListener('click',function(){
     btn.textContent=btn.dataset.lbl; btn.style.pointerEvents='';
   };
   btn.dataset.lbl=btn.textContent; btn.textContent='Recording… 4s'; btn.style.pointerEvents='none';
-  if(BubbleViz.liven)BubbleViz.liven();   // give the clip a little motion
   rec.start();
   setTimeout(()=>{ if(rec.state!=='inactive')rec.stop(); },4000);
 });
