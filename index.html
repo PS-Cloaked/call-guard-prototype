@@ -3333,7 +3333,8 @@ const BubbleViz=(function(){
      number center at CY−8, label center at CY+40). */
   function drawNumber(dt,ink,outline,haloW){
     rollT=Math.min(1,rollT+dt/360);
-    const e=1-Math.pow(1-rollT,3),HH=80,ncy=CY-8,cellW=42;
+    const yOff=(goal===0?8:0);   // empty "0" state: nudge number + label down 8px for optical centering
+    const e=1-Math.pow(1-rollT,3),HH=80,ncy=CY-8+yOff,cellW=42;
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.font='400 72px "SF Pro Display","SF Pro Text",-apple-system,sans-serif';
     const sN=String(count),sO=String(rollPrev),n=sN.length,off=n-sO.length,startX=CX-n*cellW/2;
@@ -3350,7 +3351,7 @@ const BubbleViz=(function(){
     /* sub-label "Spam Blocked": Body Small 14/1.2 -0.28 (Figma 5548:16895) */
     ctx.font='400 14px "SF Pro Text","SF Pro Display",-apple-system,sans-serif';
     if('letterSpacing' in ctx)ctx.letterSpacing='-0.28px';
-    txt(label,CX,CY+35,haloW>0?2.5:0,ink,outline);  /* optical gap below the 72px digits */
+    txt(label,CX,CY+35+yOff,haloW>0?2.5:0,ink,outline);  /* optical gap below the 72px digits */
     if('letterSpacing' in ctx)ctx.letterSpacing='0px';
   }
   function draw(now){
