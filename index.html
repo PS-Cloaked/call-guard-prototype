@@ -3050,7 +3050,7 @@ const BubbleViz=(function(){
   let pX=0,pY=0,pVX=0,pVY=0,pActive=false;    // finger-as-collider (poke the balls)
   /* shield scan — protective wavefront that sweeps across the field every ~10s
      (ported from call guard-spam.html) */
-  let scan=null,lastScan=-7000;const SCAN_EVERY=10000;
+  let scan=null,lastScan=-4000;const SCAN_EVERY=5000;   // shield sweep ~every 5s (was 10s)
   function cross(a,b){return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];}
   function basis(n){let up=Math.abs(n[1])<0.9?[0,1,0]:[1,0,0];let u=cross(n,up);const m=Math.hypot(u[0],u[1],u[2])||1;u=[u[0]/m,u[1]/m,u[2]/m];return [u,cross(n,u)];}
   function frontDir(){const az=Math.random()*6.2832, polar=0.6+Math.random()*0.35;
